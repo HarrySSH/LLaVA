@@ -38,7 +38,16 @@ class LLaVATrainer(Trainer):
             labels = None
        
         # make the codes stop here so that I can keep understadning it
-        print(model)
+        # print the key values for inputs
+        from transformers import GPT2Tokenizer
+
+        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+        decoded_text = tokenizer.decode(inputs['input_ids'][0])
+        print(decoded_text)
+
+        print("out of curiosity how many sentences are in the input IDs")
+        print(len(inputs['input_ids']))
+
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
         outputs = model(**inputs)
