@@ -36,9 +36,9 @@ class LLaVATrainer(Trainer):
             labels = inputs.pop("labels")
         else:
             labels = None
-        print('Check what is this!')
-        print(labels)
+       
         # make the codes stop here so that I can keep understadning it
+        print(model)
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
         outputs = model(**inputs)
