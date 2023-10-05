@@ -39,9 +39,10 @@ class LLaVATrainer(Trainer):
        
         # make the codes stop here so that I can keep understadning it
         # print the key values for inputs
-        from transformers import GPT2Tokenizer
+        from transformers import GPT2Tokenizer, BertTokenizer
 
-        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+        #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+        tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
         decoded_text = tokenizer.decode(inputs['input_ids'][0])
         print(decoded_text)
 
