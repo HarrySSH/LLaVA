@@ -26,7 +26,8 @@ def get_mm_adapter_state_maybe_zero_3(named_params, keys_to_match):
 
 
 class LLaVATrainer(Trainer):
-    def __init__(self,logic_classifier, *args, **kwargs):
+    def __init__(self,  logic_classifier, *args, **kwargs,):
+        super().__init__(*args, **kwargs,)
         self.logtic_classifier_model = logic_classifier
     def compute_loss(self, model, inputs, return_outputs=False):
         """
