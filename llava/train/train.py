@@ -908,6 +908,7 @@ def train():
 
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
+    training_args.logic_classifier = None
     trainer = LLaVATrainer(model=model,
                     tokenizer=tokenizer,
                     args=training_args,

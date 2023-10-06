@@ -26,6 +26,8 @@ def get_mm_adapter_state_maybe_zero_3(named_params, keys_to_match):
 
 
 class LLaVATrainer(Trainer):
+    def __init__(self, *args, **kwargs):
+        self.logtic_classifier_model = args.logtic_classifier_model
     def compute_loss(self, model, inputs, return_outputs=False):
         """
         How the loss is computed by Trainer. By default, all models return the loss in the first element.
@@ -57,7 +59,8 @@ class LLaVATrainer(Trainer):
         
         
         outputs = model(**inputs)
-        
+        print('The dimention of output logits:')
+        print(outputs.logits.shape)
         # try to convert it the sentence
         probs = torch.nn.functional.softmax(outputs.logits
                                             , dim=-1)
