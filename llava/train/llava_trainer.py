@@ -36,14 +36,15 @@ class LLaVATrainer(Trainer):
             labels = inputs.pop("labels")
         else:
             labels = None
-       
+        print(self.tokenizer)
         # make the codes stop here so that I can keep understadning it
         # print the key values for inputs
         from transformers import GPT2Tokenizer, BertTokenizer, PreTrainedTokenizer
 
         #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
        # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        decoded_text = PreTrainedTokenizer.decode(inputs['input_ids'][0])
+        decoded_text = PreTrainedTokenizer.decode(inputs['input_ids'])
+        #outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
         print(decoded_text)
 
         print("out of curiosity how many sentences are in the input IDs")
