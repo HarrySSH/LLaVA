@@ -56,8 +56,17 @@ class LLaVATrainer(Trainer):
         print('Try output')
         
         outputs = model(**inputs)
-        print(outputs.keys())
-        print(self.tokenizer.decode(outputs['output_ids'][0]))
+        
+        # try to convert it the sentence
+        probs = torch.nn.functional.softmax(outputs.logits
+                                            , dim=-1)
+        
+        # Select the token with the highest probability or sample from the distribution  
+        selected_tokens = torch.argmax(probs, dim=-1)  # Use torch.multinomial(probs, num_samples=1) for sampling  
+        
+        # Convert the selected tokens into words  
+        output_text = self.tokenizer.decode(selected_tokens[0]) 
+        print(output_text)
 
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
