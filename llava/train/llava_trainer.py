@@ -42,8 +42,9 @@ class LLaVATrainer(Trainer):
         
 
         #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-       # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        decoded_text = self.tokenizer.decode(inputs['input_ids'])
+        # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+        print(len(inputs['input_ids']))
+        decoded_text = self.tokenizer.decode(inputs['input_ids'][0])
         #outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
         print(decoded_text)
 
