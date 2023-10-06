@@ -908,10 +908,20 @@ def train():
 
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
-    training_args.logic_classifier = None
+    from sklearn.feature_extraction.text import TfidfVectorizer  
+    from sklearn.linear_model import LogisticRegression  
+    from sklearn.pipeline import Pipeline  
+
+    # Create a pipeline with a TF-IDF vectorizer and a logistic regression classifier  
+
+
+    logic_classifier = Pipeline([  
+        ("vectorizer", TfidfVectorizer(max_features=250, ngram_range=(1, 2))),  
+        ("classifier", LogisticRegression(solver="liblinear")),  
+    ])  
     trainer = LLaVATrainer(model=model,
                     tokenizer=tokenizer,
-                    logic_classifier=training_args.logic_classifier,
+                    logic_classifier=logic_classifier,
                     args=training_args,
                     **data_module)
 

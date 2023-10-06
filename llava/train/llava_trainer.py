@@ -73,6 +73,8 @@ class LLaVATrainer(Trainer):
         output_text = self.tokenizer.decode(selected_tokens[0]) 
         print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         print(output_text)
+        self.logtic_classifier_model.predict([output_text])[0] 
+        
 
         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
