@@ -911,6 +911,7 @@ def train():
     training_args.logic_classifier = None
     trainer = LLaVATrainer(model=model,
                     tokenizer=tokenizer,
+                    logic_classifier=training_args.logic_classifier,
                     args=training_args,
                     **data_module)
 
