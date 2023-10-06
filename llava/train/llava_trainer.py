@@ -55,6 +55,7 @@ class LLaVATrainer(Trainer):
         print('***********************')
         print('Try output')
         
+        
         outputs = model(**inputs)
         
         # try to convert it the sentence
@@ -66,7 +67,10 @@ class LLaVATrainer(Trainer):
         
         # Convert the selected tokens into words  
         output_text = self.tokenizer.decode(selected_tokens[0]) 
+        print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         print(output_text)
+
+        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
