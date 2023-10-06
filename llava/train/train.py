@@ -919,6 +919,17 @@ def train():
         ("vectorizer", TfidfVectorizer(max_features=250, ngram_range=(1, 2))),  
         ("classifier", LogisticRegression(solver="liblinear")),  
     ])  
+    ### shity stuff began here
+    sentences = [  
+    "This is a positive sentence.",  
+    "This is another positive example.",  
+    "This is a negative sentence.",  
+    "This is another negative example.",  
+]  
+  
+    labels = [1, 1, 0, 0]  # 1 for positive, 0 for negative 
+    ### shity stuff ended here
+    logic_classifier.fit(sentences, labels)
     trainer = LLaVATrainer(model=model,
                     tokenizer=tokenizer,
                     logic_classifier=logic_classifier,
