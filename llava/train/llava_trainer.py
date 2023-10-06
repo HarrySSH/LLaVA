@@ -49,11 +49,17 @@ class LLaVATrainer(Trainer):
         print(decoded_text)
 
         print("out of curiosity how many sentences are in the input IDs")
-        print(len(inputs['input_ids']))
+        print(len(inputs['input_ids']))  # I found all of you, mother fucker!
+
+
+        print('***********************')
+        print('Try output')
+        
+        outputs = model(**inputs)
+        print(self.tokenizer.decode(outputs['output_ids'][0]))
 
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
-        outputs = model(**inputs)
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
         if self.args.past_index >= 0:
