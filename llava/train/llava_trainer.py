@@ -56,6 +56,7 @@ class LLaVATrainer(Trainer):
         print('Try output')
         
         outputs = model(**inputs)
+        print(outputs.keys())
         print(self.tokenizer.decode(outputs['output_ids'][0]))
 
         if 1==1:
