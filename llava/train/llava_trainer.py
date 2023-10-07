@@ -70,7 +70,7 @@ class LLaVATrainer(Trainer):
         selected_tokens = torch.argmax(probs, dim=-1)  # Use torch.multinomial(probs, num_samples=1) for sampling  
         
         # Convert the selected tokens into words  
-        output_text = self.tokenizer.decode(selected_tokens[0]) 
+        output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=True)
         print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         print(output_text)
         self.logtic_classifier_model.predict([output_text])[0] 
