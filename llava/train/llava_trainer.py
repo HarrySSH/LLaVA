@@ -76,7 +76,7 @@ class LLaVATrainer(Trainer):
         # Convert the selected tokens into words  
         output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=False)
         
-        
+        # resg
         print(output_text)
         self.logtic_classifier_model.predict([output_text])[0] 
         
