@@ -46,20 +46,18 @@ class LLaVATrainer(Trainer):
 
         #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
         # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        print('****************************')
+        print('*******Orig text************')
         
-        decoded_text = self.tokenizer.decode(inputs['input_ids'][0])
+        decoded_text = self.tokenizer.decode(inputs['input_ids'][0], skip_special_tokens=True)
         #outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
+        
         print(decoded_text)
-        print("How many elements are here, seperate by\n")
-        print(len(decoded_text.split("\n")))
-
         #print("out of curiosity how many sentences are in the input IDs")
         #print(len(inputs['input_ids']))  # I found all of you, mother fucker!
 
 
-        print('***********************')
-        print('Try output')
+        #print('***********************')
+        #print('Try output')
         
         
         outputs = model(**inputs)
@@ -71,18 +69,20 @@ class LLaVATrainer(Trainer):
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
         
         # Select the token with the highest probability or sample from the distribution  
+        print('*******Decoded text************')
+        
         selected_tokens = torch.argmax(probs, dim=-1)  # Use torch.multinomial(probs, num_samples=1) for sampling  
         
         # Convert the selected tokens into words  
         output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=True)
-        '''
-        print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+        
+        
         print(output_text)
         self.logtic_classifier_model.predict([output_text])[0] 
         
 
-        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-        '''
+        print("How many elements are there")
+        print(len(output_text.split('\n')))
 
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
