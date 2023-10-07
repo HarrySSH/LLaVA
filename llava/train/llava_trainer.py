@@ -77,7 +77,11 @@ class LLaVATrainer(Trainer):
         output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=False)
         
         # resg
-        print(output_text)
+        decoded_Lists = output_text.split('</s>')
+        # the actual sentence
+        decoded_Lists =[x.replace('<s>', '') for x in  decoded_text[1:]]
+
+
         self.logtic_classifier_model.predict([output_text])[0] 
         
 
