@@ -74,7 +74,7 @@ class LLaVATrainer(Trainer):
         selected_tokens = torch.argmax(probs, dim=-1)  # Use torch.multinomial(probs, num_samples=1) for sampling  
         
         # Convert the selected tokens into words  
-        output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=True)
+        output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=False)
         
         
         print(output_text)
