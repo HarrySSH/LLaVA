@@ -46,15 +46,16 @@ class LLaVATrainer(Trainer):
 
         #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
         # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        print(len(inputs['input_ids']))
+        print('****************************')
+        
         decoded_text = self.tokenizer.decode(inputs['input_ids'][0])
         #outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
         print(decoded_text)
         print("How many elements are here, seperate by\n")
-        print(len(decoded_text.split("\n"))
+        print(len(decoded_text.split("\n")))
 
-        print("out of curiosity how many sentences are in the input IDs")
-        print(len(inputs['input_ids']))  # I found all of you, mother fucker!
+        #print("out of curiosity how many sentences are in the input IDs")
+        #print(len(inputs['input_ids']))  # I found all of you, mother fucker!
 
 
         print('***********************')
@@ -62,8 +63,10 @@ class LLaVATrainer(Trainer):
         
         
         outputs = model(**inputs)
+        '''
         print('The dimention of output logits:')
         print(outputs.logits.shape)
+        '''
         # try to convert it the sentence
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
         
@@ -72,12 +75,14 @@ class LLaVATrainer(Trainer):
         
         # Convert the selected tokens into words  
         output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=True)
+        '''
         print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         print(output_text)
         self.logtic_classifier_model.predict([output_text])[0] 
         
 
         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+        '''
 
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")
