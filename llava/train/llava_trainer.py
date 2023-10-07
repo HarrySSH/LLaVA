@@ -50,6 +50,8 @@ class LLaVATrainer(Trainer):
         decoded_text = self.tokenizer.decode(inputs['input_ids'][0])
         #outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
         print(decoded_text)
+        print("How many elements are here, seperate by\n")
+        print(len(decoded_text.split("\n"))
 
         print("out of curiosity how many sentences are in the input IDs")
         print(len(inputs['input_ids']))  # I found all of you, mother fucker!
@@ -63,8 +65,7 @@ class LLaVATrainer(Trainer):
         print('The dimention of output logits:')
         print(outputs.logits.shape)
         # try to convert it the sentence
-        probs = torch.nn.functional.softmax(outputs.logits
-                                            , dim=-1)
+        probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
         
         # Select the token with the highest probability or sample from the distribution  
         selected_tokens = torch.argmax(probs, dim=-1)  # Use torch.multinomial(probs, num_samples=1) for sampling  
