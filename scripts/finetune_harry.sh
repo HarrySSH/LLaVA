@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export CUDA_VISIBLE_DEVICES=0  # Set the GPU to use (0 for the first GPU)
 # Uncomment and set the following variables correspondingly to run this script:
 
 ################## VICUNA ##################
