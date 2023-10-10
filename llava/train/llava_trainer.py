@@ -42,16 +42,25 @@ class LLaVATrainer(Trainer):
         
         # make the codes stop here so that I can keep understadning it
         # print the key values for inputs
+
+        def find_invalid_token_ids(input_ids, tokenizer):
+            vocab_size = 25224#tokenizer.vocab.vocab_size
+            invalid_ids = []
+            for i, token_id in enumerate(input_ids):
+                if token_id <0 in enumerate(input_ids):
+                    invalid_ids.append((i, token_id))
+            return invalid_ids
+        
         
 
-        #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-        # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        print('*******Orig text************')
         
-        decoded_text = self.tokenizer.decode(inputs['input_ids'][0], skip_special_tokens=True)
+        # save the inputs['input_ids'][0] as .pt
+        
+
         #outputs = self.tokenizer.batch_decode(output_ids[:, -offset:], skip_special_tokens=True)[0]
         
-        print(decoded_text)
+        
+        
         #print("out of curiosity how many sentences are in the input IDs")
         #print(len(inputs['input_ids']))  # I found all of you, mother fucker!
 
@@ -69,24 +78,46 @@ class LLaVATrainer(Trainer):
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
         
         # Select the token with the highest probability or sample from the distribution  
-        print('*******Decoded text************')
+        
         
         selected_tokens = torch.argmax(probs, dim=-1)  # Use torch.multinomial(probs, num_samples=1) for sampling  
         
         # Convert the selected tokens into words  
         output_text = self.tokenizer.decode(selected_tokens[0], skip_special_tokens=False)
         
+        
         # resg
-        decoded_Lists = output_text.split('</s>')
-        # the actual sentence
-        decoded_Lists =[x.replace('<s>', '') for x in  decoded_text[1:]]
+        decoded_Lists = output_text.split('▶')
+        print(len(decoded_Lists))
+        assert len(decoded_Lists) ==11, 'there should be 11 elements'
+        # 1,3,5,7,9 is what I need
+        sentences = [x for x in [decoded_Lists[x] for x in [1,3,5,7,9]]]
+
+        new_docs = [self.logtic_classifier_model['nlp']('\n'.join(cohort)) for cohort in sentences] 
+
+        new_entities = [' '.join([ent.text for ent in doc.ents]) for doc in new_docs]  
+        new_dependencies = [' '.join([token.dep_ for token in doc]) for doc in new_docs]  
+        
+        new_X_entities = self.logtic_classifier_model['entities_vectorizer'].transform(new_entities)  
+
+        new_X_dependencies = self.logtic_classifier_model['dependencies_vectorizer'].transform(new_dependencies)  
+        
+        new_semantic_similarity = [self['doc2vec_model'].infer_vector([word for sentence in cohort for word in sentence.split()]) for cohort in sentences] 
+            
+        import numpy as np
+        new_X = np.hstack((new_semantic_similarity, new_X_entities.toarray(), new_X_dependencies.toarray()))  
+        
+        new_y_pred =self['clf'].predict(new_X)  
 
 
-        self.logtic_classifier_model.predict([output_text])[0] 
+        #print('***********************')
+        if new_y_pred[0] == 1:
+            print('The logic is consistent')
+        else:
+            print('The logic is inconsistent')
         
 
-        print("How many elements are there")
-        print(len(output_text.split('\n')))
+        
 
         if 1==1:
             raise Exception("make the codes stop here so that I can keep understadning it")

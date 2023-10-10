@@ -36,6 +36,32 @@ from llava.mm_utils import tokenizer_image_token
 
 from PIL import Image
 
+import sys
+import spacy  
+import numpy as np  
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument  
+from sklearn.ensemble import RandomForestClassifier  
+from sklearn.model_selection import train_test_split  
+from sklearn.metrics import classification_report  
+from Dataset_for_training_logics import data_point
+ 
+from sklearn.feature_extraction.text import TfidfVectorizer  
+from sklearn.naive_bayes import MultinomialNB  
+from sklearn.pipeline import Pipeline  
+from sklearn.model_selection import train_test_split  
+from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score
+import pandas as pd
+import requests
+from tqdm import tqdm
+
+import numpy as np  
+from sklearn.ensemble import RandomForestClassifier  
+from sklearn.feature_extraction.text import CountVectorizer  
+
+
+
+import pickle 
+
 
 local_rank = None
 
@@ -211,7 +237,7 @@ def safe_save_model_for_hf_trainer(trainer: transformers.Trainer,
         trainer._save(output_dir, state_dict=cpu_state_dict)  # noqa
 
 
-def smart_tokenizer_and_embedding_resize(
+def smart_tokenizer_and_embedding_resize( # this shit might need more attention
     special_tokens_dict: Dict,
     tokenizer: transformers.PreTrainedTokenizer,
     model: transformers.PreTrainedModel,
@@ -846,7 +872,9 @@ def train():
     if model_args.version == "v0":
         if tokenizer.pad_token is None:
             smart_tokenizer_and_embedding_resize(
-                special_tokens_dict=dict(pad_token="[PAD]"),
+                special_tokens_dict=dict(pad_token="[PAD]",
+                                         eoa_token="[INST]",
+                                         soa_token="[/INST]",),
                 tokenizer=tokenizer,
                 model=model,
             )
@@ -854,6 +882,10 @@ def train():
         tokenizer.pad_token = tokenizer.unk_token
     else:
         tokenizer.pad_token = tokenizer.unk_token
+        tokenizer._sep_token = '<PAD>'
+        #special_tokens_dict = {'additional_special_tokens': ['</siqi>','<siqi>','[C3]','[C4]']}
+        #tokenizer.add_special_tokens(special_tokens_dict)
+        
         if model_args.version in conversation_lib.conv_templates:
             conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version]
         else:
@@ -908,28 +940,32 @@ def train():
 
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
-    from sklearn.feature_extraction.text import TfidfVectorizer  
-    from sklearn.linear_model import LogisticRegression  
-    from sklearn.pipeline import Pipeline  
+    # Logic classifier #
+    import pickle  
+    # Load a pre-trained English model from spaCy  
+    nlp = spacy.load("en_core_web_sm") 
+    # Load the RandomForest model, vectorizers and the Doc2Vec model  
+    # Load the RandomForest model, vectorizers and the Doc2Vec model  
+    with open('random_forest_model.pkl', 'rb') as f:  
+        clf_loaded = pickle.load(f)  
+    
+    with open('entities_vectorizer.pkl', 'rb') as f:  
+        entities_vectorizer_loaded = pickle.load(f)  
+    
+    with open('dependencies_vectorizer.pkl', 'rb') as f:  
+        dependencies_vectorizer_loaded = pickle.load(f)  
+    
+    with open('doc2vec_model.pkl', 'rb') as f:  
+        doc2vec_model_loaded = pickle.load(f)  
+    
+    logic_classifier = {}
 
-    # Create a pipeline with a TF-IDF vectorizer and a logistic regression classifier  
+    logic_classifier['clf'] = clf_loaded
+    logic_classifier['entities_vectorizer'] = entities_vectorizer_loaded
+    logic_classifier['dependencies_vectorizer'] = dependencies_vectorizer_loaded
+    logic_classifier['doc2vec_model'] = doc2vec_model_loaded
+    logic_classifier['nlp'] = nlp
 
-
-    logic_classifier = Pipeline([  
-        ("vectorizer", TfidfVectorizer(max_features=250, ngram_range=(1, 2))),  
-        ("classifier", LogisticRegression(solver="liblinear")),  
-    ])  
-    ### shity stuff began here
-    sentences = [  
-    "This is a positive sentence.",  
-    "This is another positive example.",  
-    "This is a negative sentence.",  
-    "This is another negative example.",  
-]  
-  
-    labels = [1, 1, 0, 0]  # 1 for positive, 0 for negative 
-    ### shity stuff ended here
-    logic_classifier.fit(sentences, labels)
     trainer = LLaVATrainer(model=model,
                     tokenizer=tokenizer,
                     logic_classifier=logic_classifier,
