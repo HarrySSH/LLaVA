@@ -35,6 +35,9 @@ def eval_model(args):
 
     questions = [json.loads(q) for q in open(os.path.expanduser(args.question_file), "r")]
     questions = get_chunk(questions, args.num_chunks, args.chunk_idx)
+    print(len(questions))
+    print(len(questions[0]))
+    print(questions[0])
     answers_file = os.path.expanduser(args.answers_file)
     os.makedirs(os.path.dirname(answers_file), exist_ok=True)
     ans_file = open(answers_file, "w")
@@ -61,8 +64,10 @@ def eval_model(args):
         stop_str = conv.sep if conv.sep_style != SeparatorStyle.TWO else conv.sep2
         keywords = [stop_str]
         stopping_criteria = KeywordsStoppingCriteria(keywords, tokenizer, input_ids)
-
+        
+ 
         with torch.inference_mode():
+            
             output_ids = model.generate(
                 input_ids,
                 images=image_tensor.unsqueeze(0).half().cuda(),
@@ -102,7 +107,7 @@ if __name__ == "__main__":
     parser.add_argument("--question-file", type=str, default="tables/question.jsonl")
     parser.add_argument("--answers-file", type=str, default="answer.jsonl")
     parser.add_argument("--conv-mode", type=str, default="llava_v1")
-    parser.add_argument("--num-chunks", type=int, default=1)
+    parser.add_argument("--num-chunks", type=int, default=5)
     parser.add_argument("--chunk-idx", type=int, default=0)
     parser.add_argument("--temperature", type=float, default=0.2)
     parser.add_argument("--top_p", type=float, default=None)

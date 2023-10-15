@@ -85,30 +85,58 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict
         )
-
+        
+        
         hidden_states = outputs[0]
         logits = self.lm_head(hidden_states)
 
         loss = None
+        #print(labels)
+        
+        
+        
+        
         if labels is not None:
             # Shift so that tokens < n predict n
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
+            
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
             shift_logits = shift_logits.view(-1, self.config.vocab_size)
             shift_labels = shift_labels.view(-1)
+            
             # Enable model/pipeline parallelism
             shift_labels = shift_labels.to(shift_logits.device)
+
+
             loss = loss_fct(shift_logits, shift_labels)
+
+            #output_text = self.tokenizer.decode(shift_labels[0], skip_special_tokens=False)
+            #print(output_text)
+            numbers = shift_labels.detach().cpu().numpy()
+            
+            
+
+            
+
+            #print(output_text)
+
+
 
         if not return_dict:
             output = (logits,) + outputs[1:]
             return (loss,) + output if loss is not None else output
+        
+        
+        
 
+        
+        
+        
         return CausalLMOutputWithPast(
             loss=loss,
-            logits=logits,
+            logits=logits, # this should be logis 
             past_key_values=outputs.past_key_values,
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,

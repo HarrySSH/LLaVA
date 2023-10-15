@@ -43,7 +43,6 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sklearn.ensemble import RandomForestClassifier  
 from sklearn.model_selection import train_test_split  
 from sklearn.metrics import classification_report  
-from Dataset_for_training_logics import data_point
  
 from sklearn.feature_extraction.text import TfidfVectorizer  
 from sklearn.naive_bayes import MultinomialNB  
@@ -447,6 +446,7 @@ def preprocess_v1(
 
     # Apply prompt templates
     conversations = []
+    question_list = []
     for i, source in enumerate(sources):
         if roles[source[0]["from"]] != conv.roles[0]:
             # Skip the first one if it is not from human
@@ -457,6 +457,9 @@ def preprocess_v1(
             role = roles[sentence["from"]]
             assert role == conv.roles[j % 2], f"{i}"
             conv.append_message(role, sentence["value"])
+            
+            if role == 'USER':
+                question_list.append(sentence["value"].replace('<image>\n','').replace('<image>\n',''))
         conversations.append(conv.get_prompt())
 
     # Tokenize conversations
@@ -479,6 +482,7 @@ def preprocess_v1(
     # Mask targets
     sep = conv.sep + conv.roles[1] + ": "
     for conversation, target in zip(conversations, targets):
+    
         total_len = int(target.ne(tokenizer.pad_token_id).sum())
 
         rounds = conversation.split(conv.sep2)
@@ -512,10 +516,12 @@ def preprocess_v1(
                     f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
                     f" (ignored)"
                 )
+    
 
     return dict(
         input_ids=input_ids,
         labels=targets,
+        question_list=question_list,
     )
 
 
@@ -710,7 +716,8 @@ class LazySupervisedDataset(Dataset):
             has_image=('image' in self.list_data_dict[i]))
         if isinstance(i, int):
             data_dict = dict(input_ids=data_dict["input_ids"][0],
-                             labels=data_dict["labels"][0])
+                             labels=data_dict["labels"][0],
+                             question_list=data_dict["question_list"],)
 
         # image exist in the data
         if 'image' in self.list_data_dict[i]:
@@ -729,8 +736,8 @@ class DataCollatorForSupervisedDataset(object):
     tokenizer: transformers.PreTrainedTokenizer
 
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
-        input_ids, labels = tuple([instance[key] for instance in instances]
-                                  for key in ("input_ids", "labels"))
+        input_ids, labels, question_list = tuple([instance[key] for instance in instances]
+                                  for key in ("input_ids", "labels", "question_list"))
         input_ids = torch.nn.utils.rnn.pad_sequence(
             input_ids,
             batch_first=True,
@@ -744,6 +751,7 @@ class DataCollatorForSupervisedDataset(object):
             input_ids=input_ids,
             labels=labels,
             attention_mask=input_ids.ne(self.tokenizer.pad_token_id),
+            question_list = question_list,
         )
 
         if 'image' in instances[0]:
@@ -762,6 +770,8 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
     train_dataset = LazySupervisedDataset(tokenizer=tokenizer,
                                 data_path=data_args.data_path,
                                 data_args=data_args)
+    print(f"Loaded {len(train_dataset)} examples.")
+    
     data_collator = DataCollatorForSupervisedDataset(tokenizer=tokenizer)
     return dict(train_dataset=train_dataset,
                 eval_dataset=None,
@@ -810,7 +820,9 @@ def train():
                 model_args.model_name_or_path,
                 cache_dir=training_args.cache_dir,
                 **bnb_model_from_pretrained_args
-            )
+            ) # hey hey that's where it is going through
+            # let's me see what's in the model
+           
     else:
         model = transformers.LlamaForCausalLM.from_pretrained(
             model_args.model_name_or_path,
@@ -818,7 +830,8 @@ def train():
             **bnb_model_from_pretrained_args
         )
     model.config.use_cache = False
-
+    print(model)
+    
     if model_args.freeze_backbone:
         model.model.requires_grad_(False)
 
@@ -882,7 +895,7 @@ def train():
         tokenizer.pad_token = tokenizer.unk_token
     else:
         tokenizer.pad_token = tokenizer.unk_token
-        tokenizer._sep_token = '<PAD>'
+        #tokenizer._sep_token = '<PAD>'
         #special_tokens_dict = {'additional_special_tokens': ['</siqi>','<siqi>','[C3]','[C4]']}
         #tokenizer.add_special_tokens(special_tokens_dict)
         
@@ -940,22 +953,23 @@ def train():
 
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
+    
     # Logic classifier #
     import pickle  
     # Load a pre-trained English model from spaCy  
     nlp = spacy.load("en_core_web_sm") 
     # Load the RandomForest model, vectorizers and the Doc2Vec model  
     # Load the RandomForest model, vectorizers and the Doc2Vec model  
-    with open('random_forest_model.pkl', 'rb') as f:  
+    with open('../HemaVisionQA-dev/random_forest_model.pkl', 'rb') as f:  
         clf_loaded = pickle.load(f)  
     
-    with open('entities_vectorizer.pkl', 'rb') as f:  
+    with open('../HemaVisionQA-dev/entities_vectorizer.pkl', 'rb') as f:  
         entities_vectorizer_loaded = pickle.load(f)  
     
-    with open('dependencies_vectorizer.pkl', 'rb') as f:  
+    with open('../HemaVisionQA-dev/dependencies_vectorizer.pkl', 'rb') as f:  
         dependencies_vectorizer_loaded = pickle.load(f)  
     
-    with open('doc2vec_model.pkl', 'rb') as f:  
+    with open('../HemaVisionQA-dev/doc2vec_model.pkl', 'rb') as f:  
         doc2vec_model_loaded = pickle.load(f)  
     
     logic_classifier = {}

@@ -14,17 +14,17 @@ MODEL_VERSION="vicuna-v1-3-7b"
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero3_offload.json \
-    --model_name_or_path ./checkpoints/vicuna-7b-v1.3  \
+    --model_name_or_path ../LLaVA_backup/checkpoints/vicuna-7b-v1.3  \
     --version $PROMPT_VERSION \
     --data_path Data/ucsf_data/LLaVA_heme_train.json \
     --image_folder Data/ucsf_data/image_folder \
-    --vision_tower checkpoints/clip-vit-large-patch14 \
-    --pretrain_mm_mlp_adapter checkpoints/llava-pretrain-vicuna-7b-v1.3/mm_projector.bin \
+    --vision_tower ../LLaVA_backup/checkpoints/clip-vit-large-patch14 \
+    --pretrain_mm_mlp_adapter ../LLaVA_backup/checkpoints/llava-pretrain-vicuna-7b-v1.3/mm_projector.bin \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/llava-vicuna-v1-3-7b-just_finetune \
+    --output_dir ../LLaVA_backup/checkpoints/llava-vicuna-v1-3-7b-just-testingshit \
     --num_train_epochs 3 \
     --per_device_train_batch_size 32 \
     --per_device_eval_batch_size 4 \
